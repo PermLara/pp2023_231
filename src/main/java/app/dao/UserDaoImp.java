@@ -16,8 +16,6 @@ public class UserDaoImp implements UserDao {
 
     @Override
     public List<User> listUser() {
-        User newUser = new User("Ivan", "Ivanov", "ivan@mail.ru");
-        updateUser(newUser);
         return entityManager.createQuery("FROM User u", User.class)
                 .getResultList();
 

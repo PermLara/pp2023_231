@@ -1,5 +1,6 @@
 package app.config;
 
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -7,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -16,38 +16,50 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 @Configuration
 @PropertySource("classpath:db.properties")
 @ComponentScan(value = {"app"})
 @EnableTransactionManagement
-public class AppConfig{
+public class AppConfig {
+
+    private Environment env;
 
     @Autowired
-    private Environment env;
+    public void setEnv(Environment env) {
+        this.env = env;
+    }
 
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-        LocalContainerEntityManagerFactoryBean em
-                = new LocalContainerEntityManagerFactoryBean();
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource());
-        em.setPackagesToScan(new String[] {"app.*"});
-
-        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        em.setJpaVendorAdapter(vendorAdapter);
+        em.setPackagesToScan(env.getRequiredProperty("db.model.package"));
+        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         em.setJpaProperties(additionalProperties());
 
         return em;
     }
 
     @Bean
-    public DataSource dataSource(){
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(env.getProperty("db.driver"));
-        dataSource.setUrl(env.getProperty("db.url"));
-        dataSource.setUsername(env.getProperty("db.username"));
-        dataSource.setPassword(env.getProperty("db.password"));
+    public DataSource dataSource() {
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(env.getRequiredProperty("db.driver"));
+        dataSource.setUrl(env.getRequiredProperty("db.url"));
+        dataSource.setUsername(env.getRequiredProperty("db.username"));
+        dataSource.setPassword(env.getRequiredProperty("db.password"));
+
+        dataSource.setInitialSize(Integer.parseInt(env.getRequiredProperty("db.initialSize")));
+        dataSource.setMinIdle(Integer.parseInt(env.getRequiredProperty("db.minIdle")));
+        dataSource.setMaxIdle(Integer.parseInt(env.getRequiredProperty("db.maxIdle")));
+        dataSource.setTimeBetweenEvictionRunsMillis(Long.parseLong(env.getRequiredProperty("db.timeBetweenEvictionRunsMillis")));
+        dataSource.setMinEvictableIdleTimeMillis(Long.parseLong(env.getRequiredProperty("db.minEvictableIdleTimeMillis")));
+        dataSource.setTestOnBorrow(Boolean.parseBoolean(env.getRequiredProperty("db.testOnBorrow")));
+        dataSource.setValidationQuery(env.getRequiredProperty("db.validationQuery"));
+
         return dataSource;
     }
 
@@ -55,20 +67,27 @@ public class AppConfig{
     public PlatformTransactionManager transactionManager() {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
-
+        if (transactionManager != null) {
+            System.out.println("фабрика для транзакций успешно создала экземпляр");
+        } else {
+            System.out.println("transactionManager is null");
+        }
         return transactionManager;
     }
 
     @Bean
-    public PersistenceExceptionTranslationPostProcessor exceptionTranslation(){
+    public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
-    Properties additionalProperties() {
+    public Properties additionalProperties() {
         Properties properties = new Properties();
-        properties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
-        properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-        properties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
-        return properties;
+        try {
+            InputStream is = getClass().getClassLoader().getResourceAsStream("hibernate.properties");
+            properties.load(is);
+            return properties;
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Can't find properties for AppConfig");
+        }
     }
 }

@@ -13,7 +13,7 @@ public class UserServiceImp implements UserService {
 
     public final UserDao dao = new UserDaoImp();
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public List<User> listUser() {
 
