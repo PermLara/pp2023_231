@@ -3,26 +3,27 @@ package app.service;
 import app.dao.UserDao;
 import app.dao.UserDaoImp;
 import app.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Transactional
 @Service
 public class UserServiceImp implements UserService {
 
-    public final UserDao dao = new UserDaoImp();
+    private UserDao dao;
 
-    @Transactional
+    @Autowired
+    public void setUserDao(UserDao userDao) {
+        this.dao = userDao;
+    }
+
+    @Transactional(readOnly = true)
     @Override
     public List<User> listUser() {
-
-        //todo удалить
-        User newUser1 = new User("Ivan", "Ivanovich", "ivan@mail.ru");
-        User newUser2 = new User("Peter", "Ivanovich", "peter@mail.ru");
-        updateUser(newUser1);
-        updateUser(newUser2);
-
         return dao.listUser();
     }
 
@@ -30,6 +31,24 @@ public class UserServiceImp implements UserService {
     @Override
     public void removeUser(User user) {
         dao.removeUser(user);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public User findById(Long id) {
+        return dao.findById(id);
+    }
+
+    @Transactional
+    @Override
+    public void updateById(Long id) {
+        dao.updateById(id);
+    }
+
+    @Transactional
+    @Override
+    public void removeById(Long id) {
+        dao.removeById(id);
     }
 
     @Transactional
