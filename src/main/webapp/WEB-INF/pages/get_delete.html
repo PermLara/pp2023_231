@@ -30,11 +30,11 @@
   </table>
   <br/><br/>
   <div th:if="not ${allowDelete}">
-    <a th:href="@{/users/{id}/edit(id=${user.id})}">Edit</a> |
-    <a th:href="@{/users/{id}/delete(id=${user.id})}">Delete</a>
+    <a th:href="@{/edit/{id}(id=${user.id})}">Edit</a> |
+    <a th:href="@{/delete/{id}(id=${user.id})}">Delete</a>
   </div>
-  <form th:method="DELETE" th:if="${allowDelete}" th:action="@{/users/{id}(id=${user.id})}" >
-    <input th:type="submit" value="Delete user"/>
+  <form method="post" th:if="${allowDelete}" th:action="@{/delete/{id}(id=${user.id})}" th:object="${user}">
+    <input type="submit" value="Delete user"/>
   </form>
 </div>
 <div th:if="${errorMessage}" th:utext="${errorMessage}" class="error">

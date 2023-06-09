@@ -10,7 +10,7 @@
 <a th:href="@{/users}">Back to User List</a>
 <br/><br/>
 
-<form th:method="PATCH" th:action="@{/users/{id}(id=${user.id})}">
+<form method="post" th:action="@{/edit/{id}(id=${user.id})}" th:object="${user}">
     <div th:if="${user}">
         <table>
             <tr th:if="${user.id}">
@@ -18,20 +18,20 @@
                 <td th:utext="${user.id}">...</td>
             </tr>
             <tr>
-                <td>First Name:</td>
-                <td><input th:type="text" th:field="${user.firstName}"/></td>
+                <td><label for="firstName">First Name</label></td>
+                <td><input th:type="text" th:field="${user.firstName}" id="firstName"/></td>
             </tr>
             <tr>
-                <td>Last Name:</td>
-                <td><input th:type="text" th:field="${user.lastName}"/></td>
+                <td><label for="lastName">Last Name</label></td>
+                <td><input th:type="text" th:field="${user.lastName}" id="lastName"/></td>
             </tr>
             <tr>
-                <td>Email:</td>
-                <td><input th:type="text" th:field="${user.email}"/></td>
+                <td><label for="email">Email</label></td>
+                <td><input th:type="text" th:field="${user.email}" id="email"/></td>
             </tr>
         </table>
     </div>
-    <input th:type="submit" value="Update"/>
+    <input type="submit" value="Update"/>
 </form>
 <div th:if="${errorMessage}" th:utext="${errorMessage}" class="error">
     ...

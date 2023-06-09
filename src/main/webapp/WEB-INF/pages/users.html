@@ -11,8 +11,8 @@
 </div>
 <div>
     <nobr>
-        <a th:href="@{/users/create}">Add a User</a> |
-        <a th:href="@{/}">Back to Index</a>
+        <a th:href="@{/create}">Add a User</a> |
+        <a th:href="@{/users}">Back to Index</a>
     </nobr>
 </div>
 <br/><br/>
@@ -20,9 +20,9 @@
     <table>
         <thead>
         <tr>
-            <th> Name</th>
-            <th> Last Name</th>
-            <th> Email</th>
+            <th>Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
         </tr>
         </thead>
         <tbody>
@@ -31,7 +31,6 @@
             <td><a th:href="@{/users/{id}(id=${user.id})}" th:utext="${user.firstName}">...</a></td>
             <td><a th:href="@{/users/{id}(id=${user.id})}" th:utext="${user.lastName}">...</a></td>
             <td th:utext="${user.email}">...</td>
-            <td><a th:href="@{/users/{id}/edit(id=${user.id})}">Edit</a></td>
         </tr>
         </tbody>
     </table>
